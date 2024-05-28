@@ -1,10 +1,14 @@
 using AP1_P1_StevenCandelario.Components;
+using AP1_P1_StevenCandelario.DAL;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<Contexto>(Options => Options.UseSqlite("ConStr"));
 
 builder.Services.AddBlazorBootstrap();
 
