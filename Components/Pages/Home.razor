@@ -5,3 +5,18 @@
 <h2>Primer Parcial Aplicada I 2024-02</h2>
 <h3>Steven Y. Candelario F.</h3>
 <h4>2021-0521</h4>
+
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Plus" /> Nuevo</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Eye" /> Ver</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Pencil" /> Modificar</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Trash" /> Eliminar</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Arrow90DegLeft" /> Volver</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Floppy" /> Guardar</button>
+<button class="btn btn-outline-primary"> <Icon Name="IconName.Search" /> Buscar</button>
+
+@code{
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+
+    private void ShowMessage(ToastType toastType) =>
+    ToastService.Notify(new ToastMessage(toastType, $"Employee details saved successfully."));
+}
