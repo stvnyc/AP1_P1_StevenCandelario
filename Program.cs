@@ -1,5 +1,6 @@
 using AP1_P1_StevenCandelario.Components;
 using AP1_P1_StevenCandelario.DAL;
+using AP1_P1_StevenCandelario.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("ConStr");
 
 builder.Services.AddDbContext<Contexto>(Options => Options.UseSqlite("ConStr"));
+
+builder.Services.AddScoped<ArticuloService>();
 
 builder.Services.AddBlazorBootstrap();
 
