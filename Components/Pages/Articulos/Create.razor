@@ -1,5 +1,156 @@
-﻿<h3>Create</h3>
+﻿@page "/Articulo/Create"
+
+@inject ArticuloService articuloService
+@inject NavigationManager Navigation
+
+<PageTitle>Create Articulo</PageTitle>
+
+<EditForm Model="Articulo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <Toasts class="p-3" Messages="messages" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
+
+    <div class="card shadow-lg">
+        <div>
+            @*Header*@
+            <div class="card-header text-center">
+                <h3><strong>Crear nuevo Articulo</strong></h3>
+            </div>
+
+            @*Body*@
+            <div class="card-body">
+                <div>
+                    @*ID*@
+                    <label class="form-label">ArticuloId</label>
+                    <div class="col-md-5">
+                        <InputNumber class="form-control" @bind-Value="Articulo.ArticuloId"></InputNumber>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    @*Descripcion*@
+                    <label class="form-label">Descripci&oacute;n</label>
+                    <InputText class="form-control" @bind-Value="Articulo.Descripcion"></InputText>
+                    <ValidationMessage For="(()=> Articulo.Descripcion)" />
+                </div>
+
+                <div class="col-md-5">
+                    @*PctItbis*@
+                    <label class="form-label">Pct Itbis</label>
+                    <input type="number" class="form-control" @bind="aux_pctitbis" @bind:event="oninput"></input>
+                    <ValidationMessage For="(()=> Articulo.PctItbis)" />
+                </div>
+
+                <div class="col-md-5">
+                    @*Costo*@
+                    <label class="form-label">Costo</label>
+                    <input type="number" class="form-control" @bind="aux_costo" @bind:event="oninput"></input>
+                    <ValidationMessage For="(()=> Articulo.Costo)" />
+                </div>
+
+                <div class="col-md-5">
+                    @*Itbis*@
+                    <label class="form-label">Itbis</label>
+                    <label class="form-control" readonly>@Articulo.Itbis.ToString("N2")</label>
+                </div>
+            </div>
+            @*Footer*@
+            <div class="card-footer">
+                <button class="btn btn-outline-warning" @onclick="Volver"> <Icon Name=" IconName.Arrow90DegLeft" /> Volver</button>
+                <button class="btn btn-outline-success"> <Icon Name=" IconName.Plus" /> Crear</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
 
 @code {
+    [Parameter]
+    public int ArticuloId { get; set; }
+    public Articulos Articulo { get; set; } = new Articulos();
+    private bool Existe = false;
+    List<ToastMessage> messages = new List<ToastMessage>();
+    public decimal total;
+    private void ShowMessage(ToastType toastType, string Message) => messages.Add(CreateToastMessage(toastType, Message));
 
+    public double aux_costo
+    {
+        get => (double)Articulo.Costo;
+        set
+        {
+            if ((double)Articulo.Costo != value)
+            {
+                Articulo.Costo = (decimal)value;
+                CalcularItbis();
+            }
+        }
+    }
+
+    public double aux_pctitbis
+    {
+        get => (double)Articulo.PctItbis;
+        set
+        {
+            if ((double)Articulo.PctItbis != value)
+            {
+                Articulo.PctItbis = (decimal)value;
+                CalcularItbis();
+            }
+        }
+    }
+
+    private void CalcularItbis()
+    {
+        Articulo.Itbis = Articulo.Costo * (Articulo.PctItbis / 100);
+    }
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string Message)
+    => new ToastMessage
+        {
+            Type = toastType,
+            Title = "Notificación",
+            HelpText = $"{DateTime.Now}",
+            Message = Message,
+        };
+
+    public void Nuevo()
+    {
+        Articulo = new Articulos();
+        Existe = false;
+    }
+
+    public async Task Guardar()
+    {
+        CalcularItbis();
+        if (!await Validar())
+        {
+            ShowMessage(ToastType.Warning, $"Ya existe un articulo llamado {Articulo.Descripcion}");
+            return;
+        }
+
+        var guardo = await articuloService.Guardar(Articulo);
+        if (guardo)
+        {
+            ShowMessage(ToastType.Success, $"El articulo {Articulo.Descripcion} se ha creado correctamente");
+            Nuevo();
+        }
+        else
+            ShowMessage(ToastType.Danger, "Se ha producido un error");
+    }
+
+    public async Task Eliminar()
+    {
+        var eliminado = await articuloService.Eliminar(Articulo.ArticuloId);
+        Nuevo();
+    }
+
+    public async Task<bool> Validar()
+    {
+        Existe = await articuloService.Existe(Articulo.ArticuloId, Articulo.Descripcion!);
+        return !Existe;
+    }
+
+    public void Volver()
+    {
+        Navigation.NavigateTo("/Articulos/Index");
+    }
 }
